@@ -10,16 +10,17 @@
             class="space-y-5"
             @submit.prevent="window.location = 'index.html'"
           >
-            <div>
+            <div v-if="!data.nextPassword">
               <label for="email">Email</label>
               <input
+                v-model="data.email"
                 id="email"
                 type="email"
                 class="form-input"
                 placeholder="Enter Email"
               />
             </div>
-            <div>
+            <div class="animate__animated animate__fadeInRight" v-else>
               <label for="password">Password</label>
               <input
                 id="password"
@@ -34,7 +35,16 @@
                 <span class="text-white-dark">Remember me</span>
               </label>
             </div>
-            <button type="submit" class="btn btn-primary w-full">
+            <button
+            
+              @click="data.nextPassword = true"
+              v-if="!data.nextPassword"
+              type="submit"
+              class="btn btn-primary w-full"
+            >
+              NEXT
+            </button>
+            <button v-if="data.nextPassword" type="submit" class="btn btn-primary w-full animate__animated animate__fadeIn">
               SIGN IN
             </button>
           </form>
@@ -148,9 +158,13 @@
     <!-- end main content section -->
   </div>
 </template>
-<script>
-import './resources/css/style.css'
-export default {
-  setup() {},
-};
+<script setup lang="ts">
+import { ref } from "vue";
+import "./resources/css/style.css";
+import "./resources/css/animate.css";
+
+const data = ref({
+  email: "" as string,
+  nextPassword: false as boolean,
+});
 </script>
