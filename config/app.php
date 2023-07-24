@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Laravel'),
+    'name' => env('APP_NAME', 'ND OAuth 2.0 Server'),
 
     /*
     |--------------------------------------------------------------------------
@@ -211,7 +211,8 @@ return [
     'aliases' => Facade::defaultAliases()->merge([
         // 'ExampleClass' => App\Example\ExampleClass::class,
 
-        'Str'   =>  \Illuminate\Support\Str::class
+        'Str'   =>  \Illuminate\Support\Str::class,
+        'Model' =>  \NextDeveloper\IAM\Database\Aliases\AuthenticationModel::class
     ])->toArray(),
 
 ];
