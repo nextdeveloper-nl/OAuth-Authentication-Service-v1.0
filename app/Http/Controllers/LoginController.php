@@ -16,7 +16,8 @@ class LoginController extends Controller
         if($csrfToken == $request->get('csrf')) {
             return json_encode([
                 'logins'    =>  [
-                    'one-time-email'
+                    'one-time-email',
+                    'login-with-password'
                 ]
             ]);
         }
