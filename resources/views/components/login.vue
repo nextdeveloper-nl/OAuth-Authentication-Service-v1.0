@@ -12,13 +12,12 @@
                 type="email"
                 class="form-input"
                 v-model="data.email"
-                placeholder="Enter Email"
+                :placeholder="'Entry Email'.t1(data.lang)"
               />
             </div>
             <button class="btn btn-primary w-full mt-4" @click="LoginMethod">
               SIGN IN
             </button>
-
             <div
               class="relative my-7 h-5 text-center before:absolute before:inset-0 before:m-auto before:h-[1px] before:w-full before:bg-[#ebedf2] dark:before:bg-[#253b5c]"
             >
@@ -411,7 +410,6 @@
 <script setup>
 import axios from "axios";
 import { ref, onMounted } from "vue";
-
 onMounted(async () => {
   data.value.emailSection = true;
   getCsrf();
@@ -427,6 +425,7 @@ const data = ref({
   loginMethodList: null,
   loginOneTimeEmail: false,
   loginWithPassword: false,
+  lang:navigator.language
 });
 
 async function getCsrf() {
