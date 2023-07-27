@@ -11,12 +11,12 @@
                 id="email"
                 type="email"
                 class="form-input"
-                v-model="data.email"
-                :placeholder="'Entry Email'.t1(data.lang)"
+                v-model="data.model.email"
+                :placeholder="'Entry Email'.t1()"
               />
             </div>
             <button class="btn btn-primary w-full mt-4" @click="LoginMethod">
-              SIGN IN
+              {{ "SIGN IN".t1() }}
             </button>
             <div
               class="relative my-7 h-5 text-center before:absolute before:inset-0 before:m-auto before:h-[1px] before:w-full before:bg-[#ebedf2] dark:before:bg-[#253b5c]"
@@ -24,7 +24,7 @@
               <div
                 class="relative z-[1] inline-block bg-[#fafafa] px-2 font-bold text-white-dark dark:bg-[#060818]"
               >
-                <span>OR</span>
+                <span>{{ "OR".t1() }}</span>
               </div>
             </div>
             <ul class="mb-5 flex justify-center gap-2 sm:gap-5">
@@ -121,9 +121,10 @@
           >
             <div class="" id="loginSection">
               <h2 class="mb-3 text-3xl font-bold">
-                How do you want to login ?
+                {{ "How do you want to login?".t1() }}
               </h2>
               <div id="loginSelector" class="">
+                <!-- Login With Password -->
                 <div
                   @click="loginType('login-with-password')"
                   v-if="
@@ -163,11 +164,13 @@
                     </div>
                     <div class="flex-1">
                       <div class="flex font-semibold text-dark">
-                        Login with Password
+                        {{ "Login with Password".t1() }}
                       </div>
                     </div>
                   </div>
+               
                 </div>
+                <!-- One Time Email -->
                 <div
                   v-if="
                     data.loginMethodList.find((x) => x === 'one-time-email')
@@ -210,11 +213,12 @@
                         "
                         class="flex font-semibold text-dark"
                       >
-                        Email / One Time Password
+                        {{ "Email / One Time Password".t1() }}
                       </div>
                     </div>
                   </div>
                 </div>
+                <!-- One Time Password -->
                 <div
                   v-if="
                     data.loginMethodList.find((x) => x === 'one-time-password')
@@ -259,11 +263,12 @@
                     </div>
                     <div class="flex-1">
                       <div class="flex font-semibold text-dark">
-                        SMS / One Time Password
+                        {{ "SMS / One Time Password".t1() }}
                       </div>
                     </div>
                   </div>
                 </div>
+                <!-- QR -->
                 <div
                   v-if="data.loginMethodList.find((x) => x === 'qr')"
                   class="panel group flex items-center rounded-md p-2.5 mt-2"
@@ -333,7 +338,7 @@
                       </div>
                     </div>
                     <div class="flex-1">
-                      <div class="flex font-semibold text-dark">QR</div>
+                      <div class="flex font-semibold text-dark">{{'QR'.t1()}}</div>
                     </div>
                   </div>
                 </div>
@@ -341,47 +346,47 @@
             </div>
           </Transition>
           <div v-if="data.loginOneTimeEmail" id="loginOneTimeEmail" class="">
-            <label>One time password</label>
+            <label>{{ "One time password".t1() }}</label>
             <div class="flex w-full items-center">
               <input
                 id="ote1"
                 type="text"
                 class="form-input w-14"
-                v-model="data.model.ote1"
+                v-model="data.oneTimePasswordModel.ote1"
               />
               <input
                 id="ote1"
                 type="text"
                 class="form-input w-14 ml-2"
-                v-model="data.model.ote1"
+                v-model="data.oneTimePasswordModel.ote2"
               />
               <input
                 id="ote1"
                 type="text"
                 class="form-input w-14 ml-2"
-                v-model="data.model.ote1"
+                v-model="data.oneTimePasswordModel.ote3"
               />
               <input
                 id="ote1"
                 type="text"
                 class="form-input w-14 ml-2"
-                v-model="data.model.ote1"
+                v-model="data.oneTimePasswordModel.ote4"
               />
               <input
                 id="ote1"
                 type="text"
                 class="form-input w-14 ml-2"
-                v-model="data.model.ote1"
+                v-model="data.oneTimePasswordModel.ote5"
               />
               <input
                 id="ote1"
                 type="text"
                 class="form-input w-14 ml-2"
-                v-model="data.model.ote1"
+                v-model="data.oneTimePasswordModel.ote6"
               />
             </div>
             <button class="btn btn-primary w-full mt-4" @click="getLogins">
-              Login
+              {{ "Login".t1() }}
             </button>
           </div>
           <div
@@ -394,11 +399,11 @@
                 type="password"
                 class="form-input w-full"
                 v-model="data.model.password"
-                placeholder="Enter Password"
+                :placeholder="'Enter Password'.t1()"
               />
             </div>
             <button class="btn btn-primary w-full mt-4" @click="getLogins">
-              SIGN IN
+              {{'SIGN IN'.t1()}}
             </button>
           </div>
         </div>
@@ -409,9 +414,15 @@
 </template>
 <script setup>
 import axios from "axios";
+import { storeToRefs } from "pinia";
+import { useAuthStore } from "../../core/store/modules/login.module";
 import { ref, onMounted } from "vue";
+const { actionGetLoginMethod, actionGetCsrf, actionGetLocale } = useAuthStore();
+const { getLoginMethod, getToken } = storeToRefs(useAuthStore());
+
 onMounted(async () => {
-  data.value.emailSection = true;
+  let result = await actionGetLocale();
+  if (result.status === 200) data.value.emailSection = true;
   getCsrf();
 });
 
@@ -425,68 +436,29 @@ const data = ref({
   loginMethodList: null,
   loginOneTimeEmail: false,
   loginWithPassword: false,
-  lang:navigator.language
+  oneTimePasswordModel: {},
 });
 
 async function getCsrf() {
-  await axios.get("/security/csrf").then((res) => {
-    data.value.token = res.data;
-  });
+  await actionGetCsrf();
+  data.value.token = getToken.value;
 }
 
 async function LoginMethod() {
-  await axios
-    .get(
-      "/getLogins?csrf=" + data.value.token + "&email=" + data.value.model.email
-    )
-    .then((res) => {
-      data.value.loginMethodList = res.data.logins;
-    });
-
-  console.log("list", data.value.loginMethodList);
+  await actionGetLoginMethod({
+    csrf: data.value.token,
+    email: data.value.model.email,
+  });
+  data.value.loginMethodList = getLoginMethod.value.logins;
   data.value.emailSection = false;
   data.value.loginSection = true;
 }
 function loginType(val) {
-  console.log("val", val);
   if (val === "login-with-password") {
     data.value.loginSection = false;
     data.value.loginWithPassword = true;
   }
-  console.log("loginwithpassword", data.value.loginWithPassword);
 }
-// export default {
-//   data() {
-//     return {
-//       emailSection: true,
-//       loginSection: true,
-//       token: ''
-//     }
-//   },
-//   setup() {},
-//   beforeMount() {
-//     this.getCsrf()
-//   },
-//   methods: {
-//     getCsrf: function() {
-//       axios.get("/security/csrf")
-//           .then(function (response) {
-//         self.token = response.data;
-//       });
-//     },
-
-//     getLogins : function() {
-//       axios.get("/getLogins?csrf=" + self.token + "&email=" + this.email)
-//           .then(function (response) {
-//       });
-
-//       self.emailSection = false;
-//       self.loginSection = true;
-
-//       console.log("emailSection: " + self.emailSection + " loginsSection: " + self.emailSection);
-//     }
-//   }
-// };
 </script>
 <style>
 .fade-enter-from {
