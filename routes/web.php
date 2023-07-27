@@ -18,4 +18,6 @@ use App\Http\Controllers\LoginController;
 Route::get('/login', [LoginController::class, 'index'])->name('login.index');
 Route::get('/getLogins', [LoginController::class, 'getLogins'])->name('login.getLogins');
 
+Route::get('/config', [\App\Http\Controllers\ConfigController::class, 'index'])->name('config.index');
+
 Route::get('/security/csrf', [\App\Http\Controllers\SecurityController::class, 'csrf'])->name('security.csrf');
