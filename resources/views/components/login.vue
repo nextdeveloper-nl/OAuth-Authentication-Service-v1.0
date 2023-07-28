@@ -173,7 +173,7 @@
                 <!-- One Time Email -->
                 <div
                   v-if="
-                    data.loginMethodList.find((x) => x === 'one-time-email')
+                    data.loginMethodList.find((x) => x === 'OneTimeEmail')
                   "
                   class="panel group flex items-center rounded-md p-2.5 mt-2"
                   id="selectPassword"
@@ -221,7 +221,7 @@
                 <!-- One Time Password -->
                 <div
                   v-if="
-                    data.loginMethodList.find((x) => x === 'one-time-password')
+                    data.loginMethodList.find((x) => x === 'Password')
                   "
                   class="panel group flex items-center rounded-md p-2.5 mt-2"
                   id="selectPassword"

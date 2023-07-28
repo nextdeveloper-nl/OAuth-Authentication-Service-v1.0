@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use NextDeveloper\IAM\Database\Models\IamLoginMechanism;
+use NextDeveloper\IAM\Helpers\UserHelper;
+use NextDeveloper\IAM\Services\IamLoginMechanismService;
+use NextDeveloper\IAM\Services\IamUserService;
 
 class LoginController extends Controller
 {
@@ -14,12 +18,17 @@ class LoginController extends Controller
         $csrfToken = session()->get('csrf');
 
         if($csrfToken == $request->get('csrf')) {
-            return json_encode([
-                'logins'    =>  [
-                    'one-time-email',
-                    'login-with-password'
-                ]
-            ]);
+            $user = IamUserService::getByEmail( $request->get('email') );
+
+            $loginMechanisms = IamLoginMechanismService::getByUser($user);
+
+            $logins = [];
+
+            foreach ($loginMechanisms as $mechanism) {
+                $logins['logins'][] = $mechanism->login_mechanism;
+            }
+
+            return json_encode($logins);
         }
 
         return null;
