@@ -1,0 +1,19 @@
+{
+  "resources/css/style.css": {
+    "file": "assets/style-c5b38999.css",
+    "isEntry": true,
+    "src": "resources/css/style.css"
+  },
+  "resources/js/login.css": {
+    "file": "assets/login-76275f3d.css",
+    "src": "resources/js/login.css"
+  },
+  "resources/js/login.js": {
+    "css": [
+      "assets/login-76275f3d.css"
+    ],
+    "file": "assets/login-275b5de1.js",
+    "isEntry": true,
+    "src": "resources/js/login.js"
+  }
+}
