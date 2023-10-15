@@ -116,7 +116,7 @@
             </ul>
           </div>
           <Transition
-            v-if="data.loginSection"
+            v-if="data.loginSection && data.loginMethodList.length > 1"
             class="animate__animated animate__fadeIn animate__delay-0.5s"
           >
             <div class="" id="loginSection">
@@ -126,11 +126,9 @@
               <div id="loginSelector" class="">
                 <!-- Login With Password -->
                 <div
-                  @click="loginType('login-with-password')"
+                  @click="loginType('LoginWithPassword')"
                   v-if="
-                    data.loginMethodList.find(
-                      (x) => x === 'login-with-password'
-                    )
+                    data.loginMethodList.find((x) => x === 'LoginWithPassword')
                   "
                   class="panel group flex items-center rounded-md p-2.5"
                   id="selectPassword"
@@ -168,13 +166,11 @@
                       </div>
                     </div>
                   </div>
-               
                 </div>
                 <!-- One Time Email -->
                 <div
-                  v-if="
-                    data.loginMethodList.find((x) => x === 'OneTimeEmail')
-                  "
+                  @click="loginType('OneTimeEmail')"
+                  v-if="data.loginMethodList.find((x) => x === 'OneTimeEmail')"
                   class="panel group flex items-center rounded-md p-2.5 mt-2"
                   id="selectPassword"
                 >
@@ -206,13 +202,7 @@
                       </div>
                     </div>
                     <div class="flex-1">
-                      <div
-                        @click="
-                          (data.loginOneTimeEmail = true),
-                            (data.loginSection = false)
-                        "
-                        class="flex font-semibold text-dark"
-                      >
+                      <div class="flex font-semibold text-dark">
                         {{ "Email / One Time Password".t1() }}
                       </div>
                     </div>
@@ -220,9 +210,8 @@
                 </div>
                 <!-- One Time Password -->
                 <div
-                  v-if="
-                    data.loginMethodList.find((x) => x === 'Password')
-                  "
+                  @click="loginType('Password')"
+                  v-if="data.loginMethodList.find((x) => x === 'Password')"
                   class="panel group flex items-center rounded-md p-2.5 mt-2"
                   id="selectPassword"
                 >
@@ -270,6 +259,7 @@
                 </div>
                 <!-- QR -->
                 <div
+                  @click="loginType('qr')"
                   v-if="data.loginMethodList.find((x) => x === 'qr')"
                   class="panel group flex items-center rounded-md p-2.5 mt-2"
                   id="selectPassword"
@@ -338,60 +328,53 @@
                       </div>
                     </div>
                     <div class="flex-1">
-                      <div class="flex font-semibold text-dark">{{'QR'.t1()}}</div>
+                      <div class="flex font-semibold text-dark">
+                        {{ "QR".t1() }}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </Transition>
-          <div v-if="data.loginOneTimeEmail" id="loginOneTimeEmail" class="">
-            <label>{{ "One time password".t1() }}</label>
-            <div class="flex w-full items-center">
-              <input
-                id="ote1"
-                type="text"
-                class="form-input w-14"
-                v-model="data.oneTimePasswordModel.ote1"
-              />
-              <input
-                id="ote1"
-                type="text"
-                class="form-input w-14 ml-2"
-                v-model="data.oneTimePasswordModel.ote2"
-              />
-              <input
-                id="ote1"
-                type="text"
-                class="form-input w-14 ml-2"
-                v-model="data.oneTimePasswordModel.ote3"
-              />
-              <input
-                id="ote1"
-                type="text"
-                class="form-input w-14 ml-2"
-                v-model="data.oneTimePasswordModel.ote4"
-              />
-              <input
-                id="ote1"
-                type="text"
-                class="form-input w-14 ml-2"
-                v-model="data.oneTimePasswordModel.ote5"
-              />
-              <input
-                id="ote1"
-                type="text"
-                class="form-input w-14 ml-2"
-                v-model="data.oneTimePasswordModel.ote6"
-              />
+          <div
+            v-if="
+              data.loginOneTimeEmail ||
+              data.loginOneTimeSms ||
+              (data.loginMethodList.find(
+                (x) => x === 'OneTimeEmail' || 'Password'
+              ) &&
+                data.loginMethodList.length === 1)
+            "
+            class=""
+          >
+            <label>{{
+              data.loginMethodList.find((x) => x === "OneTimeEmail")
+                ? "One Time Email Password".t1()
+                : "One Time Sms Password".t1()
+            }}</label>
+            <div>
+              <OtpPad
+                :digitCount="6"
+                @update:otp="data.otpModel = $event"
+              ></OtpPad>
             </div>
-            <button class="btn btn-primary w-full mt-4" @click="getLogins">
-              {{ "Login".t1() }}
+            <button
+              class="btn btn-primary w-full mt-4"
+              @click="
+                getLogins(data.loginOneTimeEmail ? 'OneTimeEmail' : 'Password')
+              "
+            >
+              {{ "SIGN IN".t1() }}
             </button>
           </div>
           <div
             class="animate__animated animate__fadeIn animate__delay-0.5s pt-6"
-            v-if="data.loginWithPassword"
+            v-if="
+              data.loginWithPassword ||
+              (data.loginMethodList.find((x) => x === 'LoginWithPassword') &&
+                data.loginMethodList.length === 1)
+            "
             id="emailSection"
           >
             <div>
@@ -402,8 +385,11 @@
                 :placeholder="'Enter Password'.t1()"
               />
             </div>
-            <button class="btn btn-primary w-full mt-4" @click="getLogins">
-              {{'SIGN IN'.t1()}}
+            <button
+              class="btn btn-primary w-full mt-4"
+              @click="getLogins('LoginWithPassword')"
+            >
+              {{ "SIGN IN".t1() }}
             </button>
           </div>
         </div>
@@ -417,6 +403,7 @@ import axios from "axios";
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "../../core/store/modules/login.module";
 import { ref, onMounted } from "vue";
+import OtpPad from "../../components/OtpPad.vue";
 const { actionGetLoginMethod, actionGetCsrf, actionGetLocale } = useAuthStore();
 const { getLoginMethod, getToken } = storeToRefs(useAuthStore());
 
@@ -433,10 +420,11 @@ const data = ref({
   model: {
     email: "",
   },
-  loginMethodList: null,
+  loginMethodList: [],
   loginOneTimeEmail: false,
   loginWithPassword: false,
-  oneTimePasswordModel: {},
+  loginOneTimeSms: false,
+  otpModel: null,
 });
 
 async function getCsrf() {
@@ -454,9 +442,33 @@ async function LoginMethod() {
   data.value.loginSection = true;
 }
 function loginType(val) {
-  if (val === "login-with-password") {
-    data.value.loginSection = false;
-    data.value.loginWithPassword = true;
+  switch (val) {
+    case "LoginWithPassword":
+      data.value.loginSection = false;
+      data.value.loginWithPassword = true;
+      break;
+    case "OneTimeEmail":
+      data.value.loginSection = false;
+      data.value.loginOneTimeEmail = true;
+      break;
+    case "Password":
+      data.value.loginSection = false;
+      data.value.loginOneTimeSms = true;
+      break;
+    default:
+      break;
+  }
+}
+async function getLogins(params) {
+  switch (params) {
+    case "LoginWithPassword":
+      break;
+    case "OneTimeEmail":
+      break;
+    case "Password":
+      break;
+    default:
+      break;
   }
 }
 </script>
