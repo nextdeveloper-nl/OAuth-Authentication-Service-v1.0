@@ -6,6 +6,7 @@ export const useAuthStore = defineStore({
   state: () => ({
     login_method: null,
     csrf: null,
+    password: null
   }),
   getters: {
     getLoginMethod() {
@@ -16,6 +17,17 @@ export const useAuthStore = defineStore({
     },
   },
   actions: {
+    async actionLogin(username,password,mechanism) {
+      const response = await core().post({
+        url: createUrl("/login", {
+          username: username,
+          password: password,
+          csrf: this.csrf,
+          mechanism: mechanism
+        }),
+      });
+      return response.data;
+    },
     async actionGetLoginMethod(payload) {
       const response = await core().get({
         url: createUrl("/getLogins", payload),

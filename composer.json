@@ -47,6 +47,9 @@
         "nextdeveloper/i18n": "@dev",
         "spiral/roadrunner": "^2.8.2",
         "laravel/sanctum": "*",
+        "beyondcode/laravel-websockets": "*",
+        "predis/predis": "*",
+        "laravel/socialite": "*",
         "ext-openssl": "*"
     },
     "require-dev": {

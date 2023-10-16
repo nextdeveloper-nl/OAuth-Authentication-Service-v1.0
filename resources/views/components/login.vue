@@ -4,6 +4,7 @@
     <div class="flex min-h-screen">
       <div class="relative flex w-full items-center justify-center lg:w-2/2">
         <div style="width: 480px" class="p-5 md:p-10">
+<!--          Email input section -->
           <div v-if="data.emailSection" class="pt-6" id="emailSection">
             <h2 class="mb-3 text-3xl font-bold">Sign In or Register</h2>
             <div>
@@ -32,6 +33,7 @@
                 <button
                   type="button"
                   class="btn flex gap-1 bg-white-dark/30 text-black shadow-none hover:bg-white dark:border-[#253b5c] dark:bg-transparent dark:text-white dark:hover:bg-[#1b2e4b] sm:gap-2"
+                  onclick="window.location.href='/third-party/google/signin'"
                 >
                   <svg
                     class="h-5 w-5 sm:h-6 sm:w-6 shrink-0"
@@ -71,6 +73,7 @@
                 <button
                   type="button"
                   class="btn flex gap-1 bg-white-dark/30 text-black shadow-none hover:bg-white dark:border-[#253b5c] dark:bg-transparent dark:text-white dark:hover:bg-[#1b2e4b] sm:gap-2"
+                  onclick="window.location.href='/third-party/github/signin'"
                 >
                   <svg
                     class="h-5 w-5 sm:h-6 sm:w-6 shrink-0"
@@ -114,7 +117,20 @@
                 </button>
               </li>
             </ul>
+            <div class="flex items-center rounded p-3.5 text-white mt-5" style="
+                                            background: rgb(188, 26, 78);
+                                            background: linear-gradient(135deg, rgba(188, 26, 78, 1) 0%, rgba(0, 79, 230, 1) 100%);
+                                        ">
+              <span class="ltr:pr-2 rtl:pl-2"><strong class="ltr:mr-1 rtl:ml-1">{{ "Warning".t1() }}!</strong>{{ "Cannot login with Google login :(".t1() }}</span>
+              <button type="button" class="hover:opacity-80 ltr:ml-auto rtl:mr-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
           </div>
+<!--          LOGIN Type choosing section -->
           <Transition
             v-if="data.loginSection && data.loginMethodList.length > 1"
             class="animate__animated animate__fadeIn animate__delay-0.5s"
@@ -337,12 +353,13 @@
               </div>
             </div>
           </Transition>
+<!--          Login value section -->
           <div
             v-if="
               data.loginOneTimeEmail ||
               data.loginOneTimeSms ||
               (data.loginMethodList.find(
-                (x) => x === 'OneTimeEmail' || 'Password'
+                (x) => x === 'OneTimeEmail' || 'OneTimeSms'
               ) &&
                 data.loginMethodList.length === 1)
             "
@@ -356,18 +373,25 @@
             <div>
               <OtpPad
                 :digitCount="6"
-                @update:otp="data.otpModel = $event"
+                @update:otpEmail=loginEmailOtp($event)
+                ref="otpEmail"
               ></OtpPad>
             </div>
-            <button
-              class="btn btn-primary w-full mt-4"
-              @click="
-                getLogins(data.loginOneTimeEmail ? 'OneTimeEmail' : 'Password')
-              "
-            >
-              {{ "SIGN IN".t1() }}
-            </button>
+            <div class="flex items-center rounded p-3.5 text-white mt-5" style="
+                                            background: rgb(188, 26, 78);
+                                            background: linear-gradient(135deg, rgba(188, 26, 78, 1) 0%, rgba(0, 79, 230, 1) 100%);
+                                        ">
+              <span class="ltr:pr-2 rtl:pl-2"><strong class="ltr:mr-1 rtl:ml-1">{{ "Warning".t1() }}!</strong>{{ "The password that you are trying to enter is invalid. " +
+              "Please make sure that you are writing the correct password!".t1() }}</span>
+              <button type="button" class="hover:opacity-80 ltr:ml-auto rtl:mr-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
           </div>
+          <!--          Login with password section -->
           <div
             class="animate__animated animate__fadeIn animate__delay-0.5s pt-6"
             v-if="
@@ -404,13 +428,19 @@ import { storeToRefs } from "pinia";
 import { useAuthStore } from "../../core/store/modules/login.module";
 import { ref, onMounted } from "vue";
 import OtpPad from "../../components/OtpPad.vue";
-const { actionGetLoginMethod, actionGetCsrf, actionGetLocale } = useAuthStore();
+const { actionGetLoginMethod, actionGetCsrf, actionGetLocale, actionLogin } = useAuthStore();
 const { getLoginMethod, getToken } = storeToRefs(useAuthStore());
 
 onMounted(async () => {
   let result = await actionGetLocale();
   if (result.status === 200) data.value.emailSection = true;
   getCsrf();
+
+  var queryError = this.$route.query.error;
+
+  if(queryError) {
+
+  }
 });
 
 const data = ref({
@@ -424,7 +454,7 @@ const data = ref({
   loginOneTimeEmail: false,
   loginWithPassword: false,
   loginOneTimeSms: false,
-  otpModel: null,
+  otpPassword: null,
 });
 
 async function getCsrf() {
@@ -459,6 +489,17 @@ function loginType(val) {
       break;
   }
 }
+async function loginEmailOtp(password) {
+  var result = await actionLogin(data.value.model.email, password, "OneTimeEmail");
+
+  if(result['isLoggedIn']) {
+    window.location.href = result['redirectTo'];
+  } else {
+    //  Show warning message
+  }
+
+}
+
 async function getLogins(params) {
   switch (params) {
     case "LoginWithPassword":

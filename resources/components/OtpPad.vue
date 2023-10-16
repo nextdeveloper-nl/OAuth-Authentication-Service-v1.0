@@ -1,20 +1,21 @@
 <template>
   <div ref="otpCont" class="flex justify-between">
     <input
-      type="text"
-      v-for="(el, ind) in digits"
-      :key="el + ind"
-      v-model="digits[ind]"
-      class="form-input w-14 ml-2 text-center"
-      :autofocus="ind === 0"
-      maxlength="1"
-      @keydown="handleKeyDown($event, ind)"
+        type="text"
+        v-for="(el, ind) in digits"
+        :key="el + ind"
+        v-model="digits[ind]"
+        class="form-input w-14 ml-2 text-center"
+        :autofocus="ind === 0"
+        maxlength="1"
+        @keydown="handleKeyDown($event, ind)"
     />
   </div>
 </template>
 <script setup>
-import { ref, reactive } from "vue";
-const emit = defineEmits(["update:otp"]);
+import {ref, reactive} from "vue";
+
+const emit = defineEmits(["update:otpEmail"]);
 const props = defineProps({
   default: String,
 
@@ -50,9 +51,9 @@ const handleKeyDown = function (event, index) {
   };
 
   if (
-    event.key !== "Tab" &&
-    event.key !== "ArrowRight" &&
-    event.key !== "ArrowLeft"
+      event.key !== "Tab" &&
+      event.key !== "ArrowRight" &&
+      event.key !== "ArrowLeft"
   ) {
     event.preventDefault();
   }
@@ -75,9 +76,10 @@ const handleKeyDown = function (event, index) {
     }
   }
 
+  //  Here we are returning back the email login
   if (isDigitsFull()) {
-  emit('update:otp', digits.join(''))
-}
+    emit('update:otpEmail', digits.join(''))
+  }
 };
 </script>
 <style>
