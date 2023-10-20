@@ -20,4 +20,4 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/oauth/token', [\App\Http\Controllers\OAuth\AccessTokenController::class, 'issueToken']);
 
-Route::get('/getLogins', [LoginController::class, 'getLogins'])->name('login.getLogins');
+Route::get('/get-logins', [LoginController::class, 'getLogins'])->name('login.getLogins');
