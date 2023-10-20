@@ -20,4 +20,6 @@ URL: GET https://{authentication-server}/get-logins?email={email-address}
 }
 ```
 
-This response means that the customer has a OneTimeEmail password grant with will accept one time use 
+This response means that the customer has a OneTimeEmail password grant with one time use only. This way user can login with the password you provided.
+
+The good thing about this method is that you also validate the users email, so that you dont have to validate the user second time.
