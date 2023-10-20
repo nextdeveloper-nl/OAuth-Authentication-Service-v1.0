@@ -115,4 +115,28 @@ class LoginController extends Controller
                 'redirectTo'    =>  '/twofa'
             ];
     }
+
+    public function getLoginsApi(Request $request) {
+        $user = UsersService::getByEmail( $request->get('email') );
+
+        //  We are preparing the login stages here.
+        //  We generally have 2 stages; login and 2fa. If both of them are complete then we redirect the user.
+        LoginSessionHelper::createStage($request->get('email'));
+
+        //  If we dont have the user we are creating one
+        if(!$user){
+            $user = UsersService::createWithEmail($request->get('email'));
+        }
+
+        //
+        $loginMechanisms = (new LoginMechanismsService($user))->getByUser();
+
+        $logins = [];
+
+        foreach ($loginMechanisms as $mechanism) {
+            $logins['logins'][] = $mechanism->login_mechanism;
+        }
+
+        return json_encode($logins);
+    }
 }

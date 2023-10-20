@@ -40,6 +40,7 @@ Route::get('/login', [LoginController::class, 'index']);//->name('login');
 Route::post('/login', [LoginController::class, 'loginUser'])->name('login.loginUser');
 
 Route::get('/getLogins', [LoginController::class, 'getLogins'])->name('login.getLogins');
+Route::get('/get-logins', [LoginController::class, 'getLoginsApi'])->name('login.getApiLogins');
 
 Route::get('/config', [\App\Http\Controllers\ConfigController::class, 'index'])->name('config.index');
 
