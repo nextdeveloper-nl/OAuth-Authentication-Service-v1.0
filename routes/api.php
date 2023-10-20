@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\LoginController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -19,3 +19,5 @@ use Illuminate\Support\Facades\Route;
 //});
 
 Route::post('/oauth/token', [\App\Http\Controllers\OAuth\AccessTokenController::class, 'issueToken']);
+
+Route::get('/getLogins', [LoginController::class, 'getLogins'])->name('login.getLogins');
