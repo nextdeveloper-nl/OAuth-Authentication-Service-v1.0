@@ -6,18 +6,8 @@ use App\Helpers\LoginResponse;
 use App\Helpers\LoginSessionHelper;
 use App\Services\LoginService;
 use App\Services\SecurityService;
-use Carbon\Carbon;
-use DateInterval;
-use Illuminate\Auth\Events\Login;
 use Illuminate\Http\Request;
-use Laravel\Passport\AuthCode;
-use Laravel\Passport\Bridge\AuthCodeRepository;
-use Laravel\Passport\Bridge\RefreshTokenRepository;
-use Laravel\Passport\Passport;
-use League\OAuth2\Server\Grant\AuthCodeGrant;
 use NextDeveloper\Commons\Helpers\OAuthHelper;
-use NextDeveloper\IAM\Helpers\UserHelper;
-use NextDeveloper\IAM\Services\LoginMechanisms\OneTimeEmail;
 use NextDeveloper\IAM\Services\LoginMechanismsService;
 use NextDeveloper\IAM\Services\UsersService;
 
