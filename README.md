@@ -70,7 +70,6 @@ In development mode, first you need to clone the packages to an appropriate fold
 To run this project, you will need the components above. Please make sure that they are in the right folder and make sure that you can reach to those modules.
 
 If everything is set up, please run the composer install and then boot the application;
-
 ```
 composer install
 php artisan serve
