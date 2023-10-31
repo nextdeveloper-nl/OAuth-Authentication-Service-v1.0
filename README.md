@@ -1,3 +1,9 @@
+# NextDeveloper Authentication Platform
+
+This authentication platform is an open source version of a Laravel Passport supported OAuth authentication engine. This engine is based on the NextDeveloper IAM service and has various different authentication mechanisms. Please take a look at IAM module for more information.
+
+
+
 # About NextDeveloper Platform
 
 Since we do have multiple teams on working multiple modules or projects (lets say), we had to find a way to work
@@ -43,7 +49,12 @@ application is as easy as adding the package name to the composer;
 
 ## Running the project
 
-Is as simle as:
+In development mode;
+```
+php artisan serve
+```
+
+In production mode;
 ```
 php artisan octane:start
 ```
