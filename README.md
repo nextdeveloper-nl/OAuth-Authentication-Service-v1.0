@@ -4,19 +4,19 @@ This authentication platform is an open source version of a Laravel Passport sup
 
 
 
-# About NextDeveloper Platform
+## About NextDeveloper Platform
 
 Since we do have multiple teams on working multiple modules or projects (lets say), we had to find a way to work
 together, as well as build a software that can be deployed all together. That is why came up with modular development
 strategy.
 
-## Who is NextDeveloper?
+### Who is NextDeveloper?
 NextDeveloper is a team of developers from Netherlands, that is focusing on project management and high quality development.
 This team has been working on automation and orchestration vertical for years, and we thought that it would be fun to
 spin-off from the tech company called PlusClouds (Release the kraken!).
 During these years we have been trying to find out the techniques for fast and bug free development.
 
-## Modular development strategy
+### Modular development strategy
 
 For that reason
 in our automation projects we use Laravel to handle API requests and to make this strategy real, we came up with certain 
@@ -41,13 +41,13 @@ application is as easy as adding the package name to the composer;
     }
 ```
 
-## Components
+### Components
 
 - PHP8.2
 - Laravel
 - Laravel Octane
 
-## Running the project
+### Running the project
 
 In development mode;
 ```
