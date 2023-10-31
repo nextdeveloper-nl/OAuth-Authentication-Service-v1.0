@@ -75,7 +75,13 @@ composer install
 php artisan serve
 ```
 
-In production mode;
+In another terminal also please start up the npm so that you can build
+```
+npm install
+npm run dev
+```
+
+#### In production mode;
 ```
 composer install
 php artisan octane:start
