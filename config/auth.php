@@ -42,7 +42,7 @@ return [
         ],
 
         'api' => [
-            'driver' => 'passport',
+            'driver' => 'token',
             'provider' => 'users',
             'hash' => true,
         ],
@@ -70,11 +70,6 @@ return [
             'driver' => 'eloquent',
             'model' => NextDeveloper\IAM\Database\Models\Users::class,
         ],
-
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
     ],
 
     /*

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\OAuth;
 
-use Laravel\Passport\Http\Controllers\HandlesOAuthErrors;
 use Laravel\Passport\TokenRepository;
 use League\OAuth2\Server\AuthorizationServer;
 use Nyholm\Psr7\Response as Psr7Response;

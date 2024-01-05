@@ -20,15 +20,7 @@ use App\Http\Controllers\ThirdParty\GoogleController;
 |
 */
 
-Route::get('/', function() {
-   return redirect('/login');
-});
-
-//Route::prefix('authenticate')->group(
-//    function () {
-
-//    }
-//);
+Route::get('/', [\App\Http\Controllers\IndexController::class, 'index']);
 
 Route::prefix('oauth')->group(function() {
     Route::get('authorize', [\App\Http\Controllers\OAuth\AuthCodeController::class, 'index']);
