@@ -32,6 +32,13 @@
             "options": {
                 "symlink": true
             }
+        },
+        {
+            "type": "path",
+            "url": "../NextDeveloper/Communication",
+            "options": {
+                "symlink": true
+            }
         }
     ],
     "require": {
@@ -45,7 +52,7 @@
         "nextdeveloper/generator": "@dev",
         "nextdeveloper/iam": "@dev",
         "nextdeveloper/i18n": "@dev",
-        "spiral/roadrunner": "^2.8.2",
+        "nextdeveloper/communication": "@dev",
         "laravel/sanctum": "*",
         "beyondcode/laravel-websockets": "*",
         "predis/predis": "*",

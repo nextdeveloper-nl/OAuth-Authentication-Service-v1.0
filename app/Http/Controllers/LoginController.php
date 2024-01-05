@@ -62,7 +62,6 @@ class LoginController extends Controller
                 $user = UsersService::createWithEmail($request->get('email'));
             }
 
-            //
             $loginMechanisms = (new LoginMechanismsService($user))->getByUser();
 
             $logins = [];
