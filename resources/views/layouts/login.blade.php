@@ -13,7 +13,7 @@
         <link rel="stylesheet" type="text/css" media="screen" href="/assets/css/perfect-scrollbar.min.css" />
         <link rel="stylesheet" type="text/css" media="screen" href="/assets/css/style.css" />
         <link defer rel="stylesheet" type="text/css" media="screen" href="/assets/css/animate.css" />
-        @vite(['resources/css/app.css', 'resources/js/login.js'])
+        @vite(['resources/js/login.js'])
     </head>
     <body class="relative overflow-x-hidden font-nunito text-sm font-normal antialiased">
 

@@ -68,7 +68,7 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => NextDeveloper\IAM\Database\Models\IamUser::class,
+            'model' => NextDeveloper\IAM\Database\Models\Users::class,
         ],
 
         // 'users' => [
@@ -114,4 +114,5 @@ return [
 
     'password_timeout' => 10800,
 
+    'default_redirect_uri'  =>  env('DEFAULT_REDIRECT_URI')
 ];

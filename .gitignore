@@ -18,3 +18,5 @@ database/migrations/test
 database/migrations/*.php
 database/seeds/*TableSeeder.phprr
 .rr.yaml
+
+node_modules/

@@ -1,8 +1,13 @@
 <?php
 
+
+use App\Http\Controllers\OAuth\AuthorizationController;
+use App\Http\Controllers\ThirdParty\GithubController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\ThirdParty\GoogleController;
+//use Laravel\Passport\Http\Controllers\AuthorizationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,7 +20,40 @@ use App\Http\Controllers\LoginController;
 |
 */
 
-Route::get('/login', [LoginController::class, 'index'])->name('login.index');
+Route::get('/', function() {
+   return redirect('/login');
+});
+
+//Route::prefix('authenticate')->group(
+//    function () {
+
+//    }
+//);
+
+Route::prefix('oauth')->group(function() {
+    Route::get('authorize', [\App\Http\Controllers\OAuth\AuthCodeController::class, 'index']);
+});
+
+Route::get('/redirect', [\App\Http\Controllers\RedirectController::class, 'redirect']);
+
+Route::get('/login', [LoginController::class, 'index']);//->name('login');
+Route::post('/login', [LoginController::class, 'loginUser'])->name('login.loginUser');
+
 Route::get('/getLogins', [LoginController::class, 'getLogins'])->name('login.getLogins');
+Route::get('/get-logins', [LoginController::class, 'getLoginsApi'])->name('login.getApiLogins');
+
+Route::get('/config', [\App\Http\Controllers\ConfigController::class, 'index'])->name('config.index');
 
 Route::get('/security/csrf', [\App\Http\Controllers\SecurityController::class, 'csrf'])->name('security.csrf');
+
+Route::prefix('/third-party')->group(function() {
+    Route::prefix('google')->group(function() {
+        Route::get('signin', [GoogleController::class, 'signin']);
+        Route::get('login', [GoogleController::class, 'login']);
+    });
+
+    Route::prefix('github')->group(function() {
+        Route::get('signin', [GithubController::class, 'signin']);
+        Route::get('login', [GithubController::class, 'login']);
+    });
+});
