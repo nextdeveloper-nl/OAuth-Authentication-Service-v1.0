@@ -31,8 +31,10 @@ Route::get('/redirect', [\App\Http\Controllers\RedirectController::class, 'redir
 Route::get('/login', [LoginController::class, 'index']);//->name('login');
 Route::post('/login', [LoginController::class, 'loginUser'])->name('login.loginUser');
 
+Route::get('/login/renew/email-otp', [LoginController::class, 'newEmailOtp'])->name('login.newEmailOtp');
+
 Route::get('/getLogins', [LoginController::class, 'getLogins'])->name('login.getLogins');
-Route::get('/get-logins', [LoginController::class, 'getLoginsApi'])->name('login.getApiLogins');
+//Route::get('/get-logins', [LoginController::class, 'getLoginsApi'])->name('login.getApiLogins');
 
 Route::get('/config', [\App\Http\Controllers\ConfigController::class, 'index'])->name('config.index');
 

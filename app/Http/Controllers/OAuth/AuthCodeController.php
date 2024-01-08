@@ -5,6 +5,7 @@ namespace App\Http\Controllers\OAuth;
 use App\Helpers\LoginResponse;
 use App\Helpers\LoginSessionHelper;
 use App\Http\Controllers\Controller;
+use App\OAuth2\OAuthServer;
 use Illuminate\Http\Request;
 use Laravel\Passport\Http\Controllers\HandlesOAuthErrors;
 use Laravel\Passport\TokenRepository;
@@ -25,32 +26,23 @@ class AuthCodeController extends Controller
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|void
      */
     public function index(Request $request) {
-        if(session()->has('oauth')) {
-            session()->remove('oauth');
-        }
-
-        $data = LoginSessionHelper::parseRequestParameters($request);
+        $server = OAuthServer::startFlow()
+            ->parseAuthCodeRequest($request);
 
         //  Here we start the code creation process
-        if($data) {
-            $oauthHelper = new OAuthHelper($data['client_id']);
+        if(!$server->clientExists()) {
+            return view('layouts.error', [
+                'error' => 'Client that you provide is not valid, or does not exists. Please make sure that'
+                    . ' your client and/or valid from the oauth management panel.'
+            ]);
+        }
 
-            //  Check if the client is valid
-            if(!$oauthHelper->checkClient()) {
-                return view('layouts.error', [
-                    'error' =>  'Client that you provide is not valid, or does not exists. Please make sure that'
-                        . ' your client and/or valid from the oauth management panel.'
-                ]);
-            }
-
-            //  Check if the redirect uri match with the request
-            if(!$oauthHelper->checkReturnUrl($data['redirect_uri'])) {
-                return view('layouts.error', [
-                    'error' =>  'Redirect uri and client id do not match. Please provide a valid redirect uri'
-                        . ' to complete the oauth process. You need to change redirect_uri parameter'
-                        . ' to match with the client_id. Please check that URI and resend the request again.'
-                ]);
-            }
+        if(!$server->isReturnUrlValid()) {
+            return view('layouts.error', [
+                'error' =>  'Redirect uri and client id do not match. Please provide a valid redirect uri'
+                    . ' to complete the oauth process. You need to change redirect_uri parameter'
+                    . ' to match with the client_id. Please check that URI and resend the request again.'
+            ]);
         }
 
         return redirect('/login');

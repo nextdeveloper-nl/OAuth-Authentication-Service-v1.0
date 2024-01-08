@@ -5,8 +5,24 @@
       <div class="relative flex w-full items-center justify-center lg:w-2/2">
         <div style="width: 480px" class="p-5 md:p-10">
           <!--          Email input section -->
+          <div v-if="data.registerSection" class="pt-6" id="registerSection">
+            <h2 class="mb-3 text-3xl font-bold">{{ "Do you want to register ?".t1() }}</h2>
+            <p>
+              {{ "We could not find any account related with the user you provided. Do you want me to create a new account for you ?" }}
+            </p>
+            <p class="mt-2">
+              {{ "With this email: ".t1() }}
+              {{ data.model.email }} ?
+            </p>
+            <button class="btn btn-success w-full mt-4" @click="getLoginsWithAccount">
+              {{ "Create me an account!".t1() }}
+            </button>
+            <button class="btn btn-primary w-full mt-4" @click="goToEmailSection">
+              {{ "Nope I wrote my email wrong".t1() }}
+            </button>
+          </div>
           <div v-if="data.emailSection" class="pt-6" id="emailSection">
-            <h2 class="mb-3 text-3xl font-bold">Sign In or Register</h2>
+            <h2 class="mb-3 text-3xl font-bold">{{ "Sign In or Register".t1() }}</h2>
             <div>
               <input
                   id="email"
@@ -16,16 +32,44 @@
                   :placeholder="'Entry Email'.t1()"
               />
             </div>
-            <button class="btn btn-primary w-full mt-4" @click="LoginMethod">
+            <div v-if="data.emailValidationMessage">
+              <p class="text-danger mt-1">
+                {{ data.emailValidationMessage.t1() }}
+              </p>
+              <ul class="list-inside list-disc space-y-3 font-semibold">
+                <li v-for="error in data.emailValidationErrors['email']" class="text-danger mt-1">
+                  {{ error }}
+                </li>
+              </ul>
+            </div>
+            <button class="btn btn-primary w-full mt-4" @click="getLogins">
               {{ "SIGN IN".t1() }}
             </button>
+            <!--            <div class="flex items-center rounded p-3.5 text-white mt-5" style="-->
+            <!--                                            background: rgb(188, 26, 78);-->
+            <!--                                            background: linear-gradient(135deg, rgba(188, 26, 78, 1) 0%, rgba(0, 79, 230, 1) 100%);-->
+            <!--                                        ">-->
+            <!--              <span class="ltr:pr-2 rtl:pl-2"><strong class="ltr:mr-1 rtl:ml-1">{{-->
+            <!--                  "Warning".t1()-->
+            <!--                }}!</strong>{{ "Cannot login with Google login :(".t1() }}</span>-->
+            <!--              <button type="button" class="hover:opacity-80 ltr:ml-auto rtl:mr-auto">-->
+            <!--                <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" fill="none"-->
+            <!--                     stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"-->
+            <!--                     class="h-5 w-5">-->
+            <!--                  <line x1="18" y1="6" x2="6" y2="18"></line>-->
+            <!--                  <line x1="6" y1="6" x2="18" y2="18"></line>-->
+            <!--                </svg>-->
+            <!--              </button>-->
+            <!--            </div>-->
+          </div>
+          <div v-if="data.socialLoginSection">
             <div
                 class="relative my-7 h-5 text-center before:absolute before:inset-0 before:m-auto before:h-[1px] before:w-full before:bg-[#ebedf2] dark:before:bg-[#253b5c]"
             >
               <div
                   class="relative z-[1] inline-block bg-[#fafafa] px-2 font-bold text-white-dark dark:bg-[#060818]"
               >
-                <span>{{ "OR".t1() }}</span>
+                <span>{{ "or login with;".t1() }}</span>
               </div>
             </div>
             <ul class="mb-5 flex justify-center gap-2 sm:gap-5">
@@ -117,22 +161,6 @@
                 </button>
               </li>
             </ul>
-            <div class="flex items-center rounded p-3.5 text-white mt-5" style="
-                                            background: rgb(188, 26, 78);
-                                            background: linear-gradient(135deg, rgba(188, 26, 78, 1) 0%, rgba(0, 79, 230, 1) 100%);
-                                        ">
-              <span class="ltr:pr-2 rtl:pl-2"><strong class="ltr:mr-1 rtl:ml-1">{{
-                  "Warning".t1()
-                }}!</strong>{{ "Cannot login with Google login :(".t1() }}</span>
-              <button type="button" class="hover:opacity-80 ltr:ml-auto rtl:mr-auto">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                     class="h-5 w-5">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </button>
-            </div>
           </div>
           <!--          LOGIN Type choosing section -->
           <Transition
@@ -431,100 +459,128 @@
   </div>
 </template>
 <script setup>
-  import axios from "axios";
-  import {storeToRefs} from "pinia";
-  import {useAuthStore} from "../../core/store/modules/login.module";
-  import {ref, onMounted} from "vue";
-  import OtpPad from "../../components/OtpPad.vue";
+import axios from "axios";
+import {storeToRefs} from "pinia";
+import {useAuthStore} from "../../core/store/modules/login.module";
+import {ref, onMounted} from "vue";
+import OtpPad from "../../components/OtpPad.vue";
+import {useCoreStore as core} from "../../core/store/modules/core.module";
+import {createUrl} from "../../core/extension/createUrl";
 
-  const {actionGetLoginMethod, actionGetCsrf, actionGetLocale, actionLogin} = useAuthStore();
-  const {getLoginMethod, getToken} = storeToRefs(useAuthStore());
+const {actionGetCsrf, actionGetLocale, actionLogin} = useAuthStore();
+const {getLoginMethod, getToken} = storeToRefs(useAuthStore());
 
-  onMounted(async () => {
-    let result = await actionGetLocale();
-    if (result.status === 200) data.value.emailSection = true;
-    getCsrf();
+onMounted(async () => {
+  let result = await actionGetLocale();
+  if (result.status === 200) data.value.emailSection = true;
+  getCsrf();
+});
 
-    var queryError = this.$route.query.error;
+const data = ref({
+  emailSection: false,
+  loginSection: false,
+  registerSection: false,
+  socialLoginSection:true,
+  token: "",
+  model: {
+    email: "",
+  },
+  loginMethodList: [],
+  loginOneTimeEmail: false,
+  loginWithPassword: false,
+  loginOneTimeSms: false,
+  otpPassword: null,
+  emailValidationMessage: null,
+  emailValidationErrors: null
+});
 
-    if (queryError) {
+async function getCsrf() {
+  await actionGetCsrf();
+  data.value.token = getToken.value;
+}
 
-    }
+async function goToEmailSection() {
+  data.value.registerSection = false;
+  data.value.emailSection = true;
+}
+
+async function getLoginsWithAccount(event) {
+  getLogins(event, true);
+}
+
+async function getLogins(event, newAccount = false) {
+  data.value.emailValidationErrors = null;
+  data.value.emailValidationMessage = null;
+
+  var url = "/getLogins?email=" + data.value.model.email + "&csrf=" + data.value.token + "&new_account=0";
+
+  if(newAccount) {
+    url = "/getLogins?email=" + data.value.model.email + "&csrf=" + data.value.token + "&new_account=1";
+  }
+
+
+  const response = await axios.get(url)
+      .then(function (response) {
+        if(response.data.hasOwnProperty('error')) {
+          if(response.data.error == 'UserNotFound') {
+            data.value.emailSection = false;
+            data.value.registerSection = true;
+          }
+        } else {
+          data.value.loginMethodList = response.data.logins;
+          data.value.socialLoginSection = false;
+          data.value.emailSection = false;
+          data.value.registerSection = false;
+          data.value.loginSection = true;
+
+          console.log(response);
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+        data.value.emailValidationMessage = error.response.data.message;
+        data.value.emailValidationErrors = error.response.data.errors;
+      });
+}
+
+function loginType(val) {
+  switch (val) {
+    case "LoginWithPassword":
+      data.value.loginSection = false;
+      data.value.loginWithPassword = true;
+      break;
+    case "OneTimeEmail":
+      data.value.loginSection = false;
+      data.value.loginOneTimeEmail = true;
+      break;
+    case "Password":
+      data.value.loginSection = false;
+      data.value.loginOneTimeSms = true;
+      break;
+    default:
+      break;
+  }
+}
+
+async function getNewEmailOtp() {
+
+}
+
+async function loginEmailOtp(password) {
+  const response = await axios.post("/login", {
+    username: data.value.model.email,
+    password: password,
+    csrf: data.value.token,
+    mechanism: "OneTimeEmail"
   });
 
-  const data = ref({
-    emailSection: false,
-    loginSection: false,
-    token: "",
-    model: {
-      email: "",
-    },
-    loginMethodList: [],
-    loginOneTimeEmail: false,
-    loginWithPassword: false,
-    loginOneTimeSms: false,
-    otpPassword: null,
-  });
-
-  async function getCsrf() {
-    await actionGetCsrf();
-    data.value.token = getToken.value;
+  if (result['isLoggedIn']) {
+    window.location.href = result['redirectTo'];
+  } else {
+    //  Show warning message
   }
 
-  async function LoginMethod() {
-    data.value.loginMethodList = await actionGetLoginMethod({
-      csrf: data.value.token,
-      email: data.value.model.email,
-    });
-    console.log(data.value.loginMethodList);
-
-    data.value.loginMethodList = getLoginMethod.value.logins;
-    data.value.emailSection = false;
-    data.value.loginSection = true;
-  }
-
-  function loginType(val) {
-    switch (val) {
-      case "LoginWithPassword":
-        data.value.loginSection = false;
-        data.value.loginWithPassword = true;
-        break;
-      case "OneTimeEmail":
-        data.value.loginSection = false;
-        data.value.loginOneTimeEmail = true;
-        break;
-      case "Password":
-        data.value.loginSection = false;
-        data.value.loginOneTimeSms = true;
-        break;
-      default:
-        break;
-    }
-  }
-
-  async function loginEmailOtp(password) {
-    var result = await actionLogin(data.value.model.email, password, "OneTimeEmail");
-
-    if (result['isLoggedIn']) {
-      window.location.href = result['redirectTo'];
-    } else {
-      //  Show warning message
-    }
-
-  }
-
-  async function getLogins(params) {
-    switch (params) {
-      case "LoginWithPassword":
-        break;
-      case "OneTimeEmail":
-        break;
-      case "Password":
-        break;
-      default:
-        break;
-    }
-  }
+}
 </script>
 <style>
 .fade-enter-from {

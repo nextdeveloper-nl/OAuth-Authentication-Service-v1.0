@@ -18,22 +18,8 @@ export const useAuthStore = defineStore({
   },
   actions: {
     async actionLogin(username,password,mechanism) {
-      const response = await core().post({
-        url: createUrl("/login", {
-          username: username,
-          password: password,
-          csrf: this.csrf,
-          mechanism: mechanism
-        }),
-      });
+
       return response.data;
-    },
-    async actionGetLoginMethod(payload) {
-      const response = await core().get({
-        url: createUrl("/getLogins", payload),
-      });
-      this.login_method = response.data;
-      return this.login_method;
     },
     async actionGetCsrf(payload) {
       const response = await core().get({
@@ -46,8 +32,14 @@ export const useAuthStore = defineStore({
       const response = await core().get({
         url: createUrl("/config",payload),
       });
+      console.log(response);
       localStorage.setItem('locale',response.data.locale)
       return response
     },
+    async actionGetNewEmailOtp() {
+      const response = await core().get({
+        url: createUrl("/",payload),
+      });
+    }
   },
 });

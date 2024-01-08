@@ -38,6 +38,8 @@ class LoginSessionHelper
         $login = $lms->getByUser();
         $twofa = $lms->getTwoFA();
 
+        session()->put('userToLogin', $user);
+
         session()->put('loginStages', [
             'login'    =>  [
                 'is_required'  =>  $login == null ? false : true,
@@ -48,6 +50,14 @@ class LoginSessionHelper
                 'is_compete'    =>  false
             ]
         ]);
+    }
+
+    public static function getUserToLogin() {
+        if(session()->has('userToLogin')) {
+            return session()->get('userToLogin');
+        }
+
+        return null;
     }
 
     public static function setLoggedInUser($email) {

@@ -154,7 +154,7 @@ class OneTimeEmail extends AbstractLogin implements ILoginService
      */
     public function attempt(LoginMechanisms $mechanism, $password) : bool
     {
-        $loginData = $mechanism->login_data;
+        $loginData = json_decode($mechanism->login_data, true);
 
         if(is_array($password)) {
             $password = $password['password'];
@@ -166,8 +166,7 @@ class OneTimeEmail extends AbstractLogin implements ILoginService
             return false;
         }
 
-        $user = $mechanism->users;
-        Auth::guard()->login($user);
+        $user = \App\Database\Models\Users::where('id', $mechanism->iam_user_id)->first();
 
         return true;
     }

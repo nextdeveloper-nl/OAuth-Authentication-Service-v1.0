@@ -4,40 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Helpers\LoginResponse;
 use App\Helpers\LoginSessionHelper;
+use App\Http\Requests\GetLoginsRequest;
+use App\OAuth2\OAuthServer;
 use App\Services\LoginService;
 use App\Services\SecurityService;
 use Illuminate\Http\Request;
 use NextDeveloper\Commons\Helpers\OAuthHelper;
+use NextDeveloper\I18n\Helpers\i18n;
+use NextDeveloper\IAM\Services\AccountsService;
 use NextDeveloper\IAM\Services\LoginMechanismsService;
+use NextDeveloper\IAM\Services\Registration\RegistrationService;
 use NextDeveloper\IAM\Services\UsersService;
 
 class LoginController extends Controller
 {
     public function index(Request $request) {
-        if(session()->has('oauth')) {
-            $oauthHelper = new OAuthHelper(session()->get('oauth')['client_id']);
-
-            //  Check if the client is valid
-            if(!$oauthHelper->checkClient()) {
-                return view('layouts.error', [
-                    'error' =>  'Client that you provide is not valid, or does not exists. Please make sure that'
-                        . ' your client and/or valid from the oauth management panel.'
-                ]);
-            }
-
-            //  Check if the redirect uri match with the request
-            if(!$oauthHelper->checkReturnUrl(session()->get('oauth')['redirect_uri'])) {
-                return view('layouts.error', [
-                    'error' =>  'Redirect uri and client id do not match. Please provide a valid redirect uri'
-                        . ' to complete the oauth process. You need to change redirect_uri parameter'
-                        . ' to match with the client_id. Please check that URI and resend the request again.'
-                ]);
-            }
-        }
-
-        if(LoginSessionHelper::getLoggedInUser())
-            return redirect('/redirect');
-
         if($request->has('error')) {
             return view('layouts.login', [
                 'error' =>  $request->get('error')
@@ -47,20 +28,22 @@ class LoginController extends Controller
         return view('layouts.login');
     }
 
-    public function getLogins(Request $request) {
-        $csrfToken = session()->get('csrf');
+    public function getLogins(GetLoginsRequest $request) {
+        $csrfToken = OAuthServer::getCsrf();
+
+        $validated = $request->validated();
 
         if($csrfToken == $request->get('csrf')) {
-            $user = UsersService::getByEmail( $request->get('email') );
+            $user = UsersService::getByEmail( $validated['email'] );
 
-            //  We are preparing the login stages here.
-            //  We generally have 2 stages; login and 2fa. If both of them are complete then we redirect the user.
-            LoginSessionHelper::createStage($request->get('email'));
-
-            //  If we dont have the user we are creating one
-            if(!$user){
-                $user = UsersService::createWithEmail($request->get('email'));
+            if(!$user && $validated['new_account']) {
+                $user = RegistrationService::registerUserWithEmail($validated['email']);
             }
+
+            if(!$user)
+                return json_encode([
+                    'error' =>  'UserNotFound'
+                ]);
 
             $loginMechanisms = (new LoginMechanismsService($user))->getByUser();
 
@@ -86,9 +69,9 @@ class LoginController extends Controller
         $mechanism = $request->get('mechanism');
 
         //  Checking CSRF
-        if(!SecurityService::checkCSRF($csrf)) {
+        if($csrf != OAuthServer::getCsrf()) {
             return [
-                'authentication'    =>  'failed',
+                'authentication'    =>  'restart-session',
                 'reason'            =>  'Login session is finished sooner then expected. Please reload the page to login'
             ];
         }
@@ -97,21 +80,17 @@ class LoginController extends Controller
         if(!LoginService::checkUserLogin($email, $password, $mechanism)) {
             return [
                 'authentication'    =>  'failed',
-                'reason'            =>  'Username and password do not match, please try again with the correct password'
+                'reason'            =>  'We cannot log you in because the OTP you provided is not correct.'
             ];
         }
 
-        LoginSessionHelper::setLoggedInUser($email);
+        $user = UsersService::getByEmail( $email );
 
-        if(LoginSessionHelper::areStagesComplete())
-            return [
+        $authCode = OAuthServer::issueAuthCode($user);
+
+        return [
                 'isLoggedIn'    =>  true,
-                'redirectTo'    =>  '/redirect'
-            ];
-        else
-            return [
-                'isLoggedIn'    =>  true,
-                'redirectTo'    =>  '/twofa'
+                'redirectTo'    =>  OAuthServer::getReturnUri()
             ];
     }
 
@@ -137,5 +116,11 @@ class LoginController extends Controller
         }
 
         return json_encode($logins);
+    }
+
+    public function newEmailOtp(Request $request) {
+        $user = LoginSessionHelper::getUserToLogin();
+
+        dd($user);
     }
 }

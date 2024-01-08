@@ -1,3 +1,1 @@
-GET http://127.0.0.1:8000/oauth2/authorize?client=6b2631d2-2329-11ee-b8af-c2ea10853885&redirect_uri=http://127.0.0.1:8001/oauth/callback&response_type=code
-
-###
+GET http://127.0.0.1:8000/oauth/authorize?client=6b2631d2-2329-11ee-b8af-c2ea10853885&redirect_uri=http://127.0.0.1:8001/oauth/callback&response_type=code
