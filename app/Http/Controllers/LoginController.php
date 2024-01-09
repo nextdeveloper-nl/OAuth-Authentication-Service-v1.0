@@ -25,7 +25,9 @@ class LoginController extends Controller
             ]);
         }
 
-        return view('layouts.login');
+        return view('layouts.login', [
+            'translationFile'  =>  '//127.0.0.1:8000/i18n/translate/js-vue?domainId=d2c98bdf-9942-11ee-b8af-c2ea10853885&languageId=2041a243-1f09-11ee-b8af-c2ea10853885'
+        ]);
     }
 
     public function getLogins(GetLoginsRequest $request) {
@@ -72,7 +74,7 @@ class LoginController extends Controller
         if($csrf != OAuthServer::getCsrf()) {
             return [
                 'authentication'    =>  'restart-session',
-                'reason'            =>  'Login session is finished sooner then expected. Please reload the page to login'
+                'reason'            =>  i18n::t('Login session is finished sooner then expected. Please reload the page to login')
             ];
         }
 
@@ -80,7 +82,7 @@ class LoginController extends Controller
         if(!LoginService::checkUserLogin($email, $password, $mechanism)) {
             return [
                 'authentication'    =>  'failed',
-                'reason'            =>  'We cannot log you in because the OTP you provided is not correct.'
+                'reason'            =>  i18n::t('We cannot log you in because the OTP you provided is not correct.')
             ];
         }
 

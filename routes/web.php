@@ -34,9 +34,9 @@ Route::post('/login', [LoginController::class, 'loginUser'])->name('login.loginU
 Route::get('/login/renew/email-otp', [LoginController::class, 'newEmailOtp'])->name('login.newEmailOtp');
 
 Route::get('/getLogins', [LoginController::class, 'getLogins'])->name('login.getLogins');
-//Route::get('/get-logins', [LoginController::class, 'getLoginsApi'])->name('login.getApiLogins');
 
-Route::get('/config', [\App\Http\Controllers\ConfigController::class, 'index'])->name('config.index');
+Route::get('/locale', [\App\Http\Controllers\LocaleController::class, 'index'])->name('locale.index');
+Route::put('/locale', [\App\Http\Controllers\LocaleController::class, 'setLocale'])->name('locale.setLocale');
 
 Route::get('/security/csrf', [\App\Http\Controllers\SecurityController::class, 'csrf'])->name('security.csrf');
 

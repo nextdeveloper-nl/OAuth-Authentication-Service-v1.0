@@ -30,7 +30,7 @@ export const useAuthStore = defineStore({
     },
     async actionGetLocale(payload) {
       const response = await core().get({
-        url: createUrl("/config",payload),
+        url: createUrl("/locale",payload),
       });
       console.log(response);
       localStorage.setItem('locale',response.data.locale)

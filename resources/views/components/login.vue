@@ -8,7 +8,7 @@
           <div v-if="data.registerSection" class="pt-6" id="registerSection">
             <h2 class="mb-3 text-3xl font-bold">{{ "Do you want to register ?".t1() }}</h2>
             <p>
-              {{ "We could not find any account related with the user you provided. Do you want me to create a new account for you ?" }}
+              {{ "We could not find any account related with the user you provided. Do you want me to create a new account for you ?".t1() }}
             </p>
             <p class="mt-2">
               {{ "With this email: ".t1() }}
@@ -452,6 +452,18 @@
               {{ "SIGN IN".t1() }}
             </button>
           </div>
+          <div class="dropdown">
+            <Popper :placement="bottom-end" offsetDistance="0" class="align-middle">
+              <button type="button" class="btn btn-dark btn-sm dropdown-toggle">
+                {{ "Change language".t1() }}
+              </button>
+              <template #content="{ close }">
+                <ul @click="close()" class="whitespace-nowrap">
+                  <li v-for="item in data.languages"><a @click="setLocale(item.code)">{{ item.native_name }}</a></li>
+                </ul>
+              </template>
+            </Popper>
+          </div>
         </div>
       </div>
     </div>
@@ -466,11 +478,19 @@ import {ref, onMounted} from "vue";
 import OtpPad from "../../components/OtpPad.vue";
 import {useCoreStore as core} from "../../core/store/modules/core.module";
 import {createUrl} from "../../core/extension/createUrl";
+import Popper from "vue3-popper";
 
 const {actionGetCsrf, actionGetLocale, actionLogin} = useAuthStore();
 const {getLoginMethod, getToken} = storeToRefs(useAuthStore());
 
 onMounted(async () => {
+  console.log(actionGetLocale());
+
+  const languages = await import("./../../../lang/vue/languages.json");
+  data.value.languages = languages.default;
+
+  console.log(data.value.languages);
+
   let result = await actionGetLocale();
   if (result.status === 200) data.value.emailSection = true;
   getCsrf();
@@ -491,8 +511,21 @@ const data = ref({
   loginOneTimeSms: false,
   otpPassword: null,
   emailValidationMessage: null,
-  emailValidationErrors: null
+  emailValidationErrors: null,
+  languages: null
 });
+
+async function setLocale(locale) {
+  const response = await axios.put(
+      "/locale", {
+        locale: locale
+      }
+  )
+      .then(function (response) {
+        localStorage.setItem('locale', locale);
+        location.reload();
+      });
+}
 
 async function getCsrf() {
   await actionGetCsrf();
