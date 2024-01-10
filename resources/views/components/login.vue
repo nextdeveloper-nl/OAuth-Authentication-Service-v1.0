@@ -8,7 +8,9 @@
           <div v-if="data.registerSection" class="pt-6" id="registerSection">
             <h2 class="mb-3 text-3xl font-bold">{{ "Do you want to register ?".t1() }}</h2>
             <p>
-              {{ "We could not find any account related with the user you provided. Do you want me to create a new account for you ?".t1() }}
+              {{
+                "We could not find any account related with the user you provided. Do you want me to create a new account for you ?".t1()
+              }}
             </p>
             <p class="mt-2">
               {{ "With this email: ".t1() }}
@@ -409,12 +411,12 @@
                   ref="otpEmail"
               ></OtpPad>
             </div>
-            <div class="flex items-center rounded p-3.5 text-white mt-5" style="
+            <div v-if="data.emailOTPWrongPassword" class="flex items-center rounded p-3.5 text-white mt-5" style="
                                             background: rgb(188, 26, 78);
                                             background: linear-gradient(135deg, rgba(188, 26, 78, 1) 0%, rgba(0, 79, 230, 1) 100%);
                                         ">
               <span class="ltr:pr-2 rtl:pl-2"><strong class="ltr:mr-1 rtl:ml-1">{{ "Warning".t1() }}!</strong>{{
-                  "The password that you are trying to enter is invalid. " +
+                  "The password that you are trying to enter is invalid. ".t1() +
                   "Please make sure that you are writing the correct password!".t1()
                 }}</span>
               <button type="button" class="hover:opacity-80 ltr:ml-auto rtl:mr-auto">
@@ -452,7 +454,8 @@
               {{ "SIGN IN".t1() }}
             </button>
           </div>
-          <div class="dropdown">
+          <hr class="mb-4 mt-4">
+          <div class="dropdown ">
             <Popper :placement="bottom-end" offsetDistance="0" class="align-middle">
               <button type="button" class="btn btn-dark btn-sm dropdown-toggle">
                 {{ "Change language".t1() }}
@@ -463,6 +466,7 @@
                 </ul>
               </template>
             </Popper>
+            {{ "Current language is " + VueCookies.get('locale').t1() }}
           </div>
         </div>
       </div>
@@ -479,11 +483,16 @@ import OtpPad from "../../components/OtpPad.vue";
 import {useCoreStore as core} from "../../core/store/modules/core.module";
 import {createUrl} from "../../core/extension/createUrl";
 import Popper from "vue3-popper";
+import VueCookies from 'vue-cookies'
 
 const {actionGetCsrf, actionGetLocale, actionLogin} = useAuthStore();
 const {getLoginMethod, getToken} = storeToRefs(useAuthStore());
 
 onMounted(async () => {
+  axios.defaults.headers = {
+    "Accept-Language": VueCookies.get('locale')
+  }
+
   console.log(actionGetLocale());
 
   const languages = await import("./../../../lang/vue/languages.json");
@@ -500,7 +509,7 @@ const data = ref({
   emailSection: false,
   loginSection: false,
   registerSection: false,
-  socialLoginSection:true,
+  socialLoginSection: true,
   token: "",
   model: {
     email: "",
@@ -512,6 +521,7 @@ const data = ref({
   otpPassword: null,
   emailValidationMessage: null,
   emailValidationErrors: null,
+  emailOTPWrongPassword: false,
   languages: null
 });
 
@@ -523,6 +533,7 @@ async function setLocale(locale) {
   )
       .then(function (response) {
         localStorage.setItem('locale', locale);
+        VueCookies.set("locale", locale)
         location.reload();
       });
 }
@@ -547,15 +558,15 @@ async function getLogins(event, newAccount = false) {
 
   var url = "/getLogins?email=" + data.value.model.email + "&csrf=" + data.value.token + "&new_account=0";
 
-  if(newAccount) {
+  if (newAccount) {
     url = "/getLogins?email=" + data.value.model.email + "&csrf=" + data.value.token + "&new_account=1";
   }
 
 
   const response = await axios.get(url)
       .then(function (response) {
-        if(response.data.hasOwnProperty('error')) {
-          if(response.data.error == 'UserNotFound') {
+        if (response.data.hasOwnProperty('error')) {
+          if (response.data.error == 'UserNotFound') {
             data.value.emailSection = false;
             data.value.registerSection = true;
           }
@@ -605,14 +616,17 @@ async function loginEmailOtp(password) {
     password: password,
     csrf: data.value.token,
     mechanism: "OneTimeEmail"
+  }).then(function (response) {
+    console.log(response);
+
+    if ('isLoggedIn' in response.data) {
+      console.log(response.data);
+      //window.location.href = response.data['redirectTo'];
+    } else {
+      //  Show warning message
+      data.value.emailOTPWrongPassword = true;
+    }
   });
-
-  if (result['isLoggedIn']) {
-    window.location.href = result['redirectTo'];
-  } else {
-    //  Show warning message
-  }
-
 }
 </script>
 <style>
