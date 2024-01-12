@@ -23,7 +23,8 @@ use App\Http\Controllers\ThirdParty\GoogleController;
 Route::get('/', [\App\Http\Controllers\IndexController::class, 'index']);
 
 Route::prefix('oauth')->group(function() {
-    Route::get('authorize', [\App\Http\Controllers\OAuth\AuthCodeController::class, 'index']);
+    Route::get('authorize', [\App\Http\Controllers\OAuth\OAuthController::class, 'authorizationCode']);
+    Route::get('token', [\App\Http\Controllers\OAuth\OAuthController::class, 'issueToken']);
 });
 
 Route::get('/redirect', [\App\Http\Controllers\RedirectController::class, 'redirect']);

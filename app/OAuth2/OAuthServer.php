@@ -1,6 +1,10 @@
 <?php
 
 namespace App\OAuth2;
+use App\Database\Models\OauthAccessTokens;
+use App\Database\Models\OauthAuthCode;
+use App\Database\Models\OauthClient;
+use App\Exceptions\OAuthExceptions;
 use App\OAuth2\Repositories\AccessTokenRepository;
 use App\OAuth2\Repositories\AuthCodeRepository;
 use App\OAuth2\Repositories\ClientRepository;
@@ -32,6 +36,88 @@ class OAuthServer
 
     public static function getReturnUri() {
         return session()->get('redirect_uri') . '?code=' . session()->get('auth_code');
+    }
+
+    public static function issueToken($request) {
+        $server = new OAuthServer();
+
+        $grantType = $request['grant_type'];
+
+        $client = OauthClient::where('id', $request['client_id'])
+            ->where('secret', $request['client_secret'])
+            ->where('personal_access_client', 0)
+            ->where('password_client', 0)
+            ->where('revoked', 0)
+            ->first();
+
+        if(!$client) {
+            throw OAuthExceptions::clientNotAvailable();
+        }
+
+        $token = '';
+
+        switch ($grantType) {
+            case 'authorization_code':
+                $token = $server->issueTokenWithCode($client, $request['code']);
+        }
+
+        return $token;
+    }
+
+    private function issueTokenWithCode(OauthClient $client, string $code) {
+        $code = OauthAuthCode::where('client_id', $client->id)
+            ->where('id', $code)
+            ->where('revoked', 0)
+            ->where('expires_at', '>=', Carbon::now()->toDateTimeString())
+            ->first();
+
+        if(!$code)
+            throw OAuthExceptions::authCodeNotValid();
+
+        $userId = $code->user_id;
+
+        $foundUniqueId = false;
+
+        while(!$foundUniqueId) {
+            $uniqueId = Str::random(40);
+
+            $recordExists = OauthAccessTokens::where('id', $uniqueId)->first();
+
+            if(!$recordExists)
+                $foundUniqueId = true;
+        }
+
+        $months = 3;
+
+        $token = OauthAccessTokens::create([
+            'id'        =>  $uniqueId,
+            'user_id'   =>  $userId,
+            'client_id' =>  $code->client_id,
+            'scopes'    =>  $code->scopes,
+            'revoked'   =>  0,
+            'created_at'    =>  Carbon::now()->toDateTimeString(),
+            'updated_at'    =>  Carbon::now()->toDateTimeString(),
+            'expires_at'    =>  Carbon::now()->addMonths($months)->toDateTimeString()
+        ]);
+
+        $tokensToDelete = OauthAccessTokens::where('user_id', $userId)
+            ->where('id', '!=', $token->id)
+            ->where('client_id', $code->client_id)
+            ->get();
+
+        foreach ($tokensToDelete as $item) {
+            $item->forceDelete();
+        }
+
+        $response = [
+            'access_token'  =>  $token->id,
+            'token_type'    =>  'Bearer',
+            'expires_in'    =>  Carbon::now()->addMonths($months)->diffInSeconds(now()),
+            'refresh_token' =>  'not-implemented-yet',
+            'scope' =>  implode(',', json_decode($token->scopes, true))
+        ];
+
+        return $response;
     }
 
     public static function getCsrf()
@@ -73,7 +159,7 @@ class OAuthServer
 
     public function parseAuthCodeRequest(Request $request) : OAuthServer {
         session([
-            'client'    =>  $request->get('client'),
+            'client'    =>  $request->get('client_id'),
             'redirect_uri' =>  $request->get('redirect_uri'),
             'response_type'  =>  $request->get('response_type'),
             'scope' =>  $request->get('scope'),

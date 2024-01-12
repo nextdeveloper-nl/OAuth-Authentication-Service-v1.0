@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers\OAuth;
 
+use App\Exceptions\OAuthExceptions;
 use App\Helpers\LoginResponse;
 use App\Helpers\LoginSessionHelper;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\IssueTokenRequest;
 use App\OAuth2\OAuthServer;
 use Illuminate\Http\Request;
 use Laravel\Passport\Http\Controllers\HandlesOAuthErrors;
 use Laravel\Passport\TokenRepository;
 use League\OAuth2\Server\AuthorizationServer;
 use NextDeveloper\Commons\Helpers\OAuthHelper;
+use NextDeveloper\Commons\Http\Traits\Responsable;
 use NextDeveloper\IAM\Helpers\UserHelper;
 use NextDeveloper\IAM\Services\LoginMechanisms\OneTimeEmail;
 use NextDeveloper\IAM\Services\LoginMechanismsService;
@@ -18,14 +21,15 @@ use NextDeveloper\IAM\Services\UsersService;
 use Nyholm\Psr7\Response as Psr7Response;
 use Psr\Http\Message\ServerRequestInterface;
 
-class AuthCodeController extends Controller
+class OAuthController extends Controller
 {
+    use Responsable;
     /**
      * We are managing the login request by the response type; code
      * @param Request $request
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|void
      */
-    public function index(Request $request) {
+    public function authorizationCode(Request $request) {
         $server = OAuthServer::startFlow()
             ->parseAuthCodeRequest($request);
 
@@ -48,7 +52,13 @@ class AuthCodeController extends Controller
         return redirect('/login');
     }
 
-    public function issueToken(Request $request) {
+    public function issueToken(IssueTokenRequest $request) {
+        try{
+            $token = OAuthServer::issueToken($request->validated());
 
+            return $this->withArray($token);
+        } catch (OAuthExceptions $exception) {
+            return $this->errorBadRequest($exception->getMessage());
+        }
     }
 }

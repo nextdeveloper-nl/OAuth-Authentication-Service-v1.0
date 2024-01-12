@@ -466,7 +466,7 @@
                 </ul>
               </template>
             </Popper>
-            {{ "Current language is " + VueCookies.get('locale').t1() }}
+            {{ "Current language is " + VueCookies.get('locale') }}
           </div>
         </div>
       </div>
